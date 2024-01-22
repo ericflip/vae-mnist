@@ -47,10 +47,36 @@ class Encoder(nn.Module):
 class Decoder(nn.Module):
     def __init__(self, latent_dim: int):
         super().__init__()
-        self.tconv1 = nn.ConvTranspose2d()
+        self.ztransform = nn.Linear(latent_dim, 1024)
+        self.tconv1 = nn.Sequential(
+            nn.ConvTranspose2d(64, 32, 3, 2, 1, 1),  # (64, 4, 4) -> (32, 7, 7)
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+        )
+        self.tconv2 = nn.Sequential(
+            nn.ConvTranspose2d(32, 16, 3, 2, 2, 1),  # (32, 7, 7) -> (16, 14, 14)
+            nn.BatchNorm2d(16),
+            nn.ReLU(),
+        )
+        self.tconv3 = nn.Sequential(
+            nn.ConvTranspose2d(16, 1, 3, 2, 1, 1),  # (16, 14, 14) -> (1, 28, 28)
+            nn.Sigmoid(),
+        )
+
+    def forward(self, z: torch.Tensor):
+        # transform z to 2d
+        z = self.ztransform(z)
+        z = z.view(-1, 64, 4, 4)
+
+        # transpose convolutions
+        z = self.tconv1(z)
+        z = self.tconv2(z)
+        z = self.tconv3(z)
+
+        return z
 
 
-class VAE(nn.Module):
+class MNISTVAE(nn.Module):
     def __init__(self, latent_dim: int):
         super().__init__()
         self.latent_dim = latent_dim
