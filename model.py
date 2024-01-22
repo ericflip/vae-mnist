@@ -79,19 +79,23 @@ class Decoder(nn.Module):
 class MNISTVAE(nn.Module):
     def __init__(self, latent_dim: int):
         super().__init__()
-        self.latent_dim = latent_dim
+        self.encoder = Encoder(in_channels=1, latent_dim=latent_dim)
+        self.decoder = Decoder(latent_dim=latent_dim)
 
-    def encode():
+    def encode(self, x: torch.Tensor):
+        return self.encoder(x)
+
+    def decode(self, z: torch.Tensor):
+        return self.decoder(z)
+
+    def sample(self, num_samples: int):
         pass
 
-    def decode():
-        pass
-
-    def sample():
-        pass
-
-    def generate():
+    def generate(self, x: torch.Tensor):
         pass
 
     def forward(self, x: torch.Tensor):
-        pass
+        z, mu, logvar = self.encode(x)
+        pred = self.decode(z)
+
+        return pred, mu, logvar
