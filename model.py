@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from loss import VAELoss
 
 
 class Encoder(nn.Module):
@@ -95,4 +96,7 @@ class MNISTVAE(nn.Module):
         z, mu, logvar = self.encode(x)
         pred = self.decode(z)
 
-        return pred, mu, logvar
+        criterion = VAELoss()
+        loss = criterion(x, pred, mu, logvar)
+
+        return {"pred": pred, "loss": loss, "latent": z}
