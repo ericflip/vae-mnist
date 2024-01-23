@@ -91,9 +91,6 @@ class MNISTVAE(nn.Module):
     def sample(self, num_samples: int):
         pass
 
-    def generate(self, x: torch.Tensor):
-        pass
-
     def forward(self, x: torch.Tensor):
         z, mu, logvar = self.encode(x)
         pred = self.decode(z)
