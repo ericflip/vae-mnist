@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from loss import VAELoss
 
 
 class Encoder(nn.Module):
@@ -80,6 +79,7 @@ class Decoder(nn.Module):
 class MNISTVAE(nn.Module):
     def __init__(self, latent_dim: int):
         super().__init__()
+        self.latent_dim = latent_dim
         self.encoder = Encoder(in_channels=1, latent_dim=latent_dim)
         self.decoder = Decoder(latent_dim=latent_dim)
 
@@ -89,14 +89,12 @@ class MNISTVAE(nn.Module):
     def decode(self, z: torch.Tensor):
         return self.decoder(z)
 
-    def sample(self, num_samples: int):
-        pass
+    def sample(self, num_samples: int, device):
+        z = torch.randn((num_samples, self.latent_dim)).to(device)
+        return self.decode(z)
 
     def forward(self, x: torch.Tensor):
         z, mu, logvar = self.encode(x)
         pred = self.decode(z)
 
-        criterion = VAELoss()
-        loss = criterion(x, pred, mu, logvar)
-
-        return {"pred": pred, "loss": loss, "latent": z}
+        return {"output": pred, "latent": z, "mu": mu, "logvar": logvar}
